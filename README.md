@@ -46,10 +46,14 @@ This software is designed to behave exactly like the physical hardware board.
 * **Turning Knobs:** Because turning a knob in a circle with a mouse is frustrating, this emulator uses a drag system. **Click and hold the knob, then drag your mouse Up to increase the value, or Down to decrease it.**
 * **Flipping Switches:** For standard switches (like the VCO range or Line Code selector), simply click directly on the switch text to toggle it.
 
+* <img width="2495" height="1583" alt="image" src="https://github.com/user-attachments/assets/3f2f9b69-c24d-411e-ab92-fe5b2d325bf8" />
+
+
 ### 3. Using the Oscilloscope
 * The board features a built-in virtual oscilloscope. Connect any signal you want to view to the **CH A**, **CH B**, **CH C**, or **CH D** ports on the board.
 * A pop-up black window will automatically appear showing your waveforms.
 * To adjust how the waves look, use the **Oscilloscope Control** panel located in the main MATLAB window. You can stretch the waves horizontally (Time/Div) or vertically (Volts/Div) to get a clear view.
+<img width="2495" height="1587" alt="image" src="https://github.com/user-attachments/assets/ac7a1b80-dc48-45b9-8486-f599a478e9a3" />
 
 ---
 
