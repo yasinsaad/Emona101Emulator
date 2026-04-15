@@ -1,3 +1,4 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 # Emona 101/C Telecommunications Emulator
 
 Welcome to the Emona 101/C Emulator! This software is a virtual version of the physical Emona 101/C Telecommunications Experimenter board. It allows you to build, route, and test analog and digital communication circuits directly on your computer, just like you would with physical cables in a laboratory.
@@ -6,30 +7,22 @@ Welcome to the Emona 101/C Emulator! This software is a virtual version of the p
 
 ## 📥 How to Download and Install
 
-Before you begin, you need to download the files to your computer. 
-* If you are on the GitHub webpage, click the green **"<> Code"** button near the top right, and select **"Download ZIP"**. 
-* Extract (unzip) the downloaded folder to a location on your computer, such as your Desktop.
+The easiest way to get started is to download the pre-packaged installers from the **[Releases](https://github.com/yasinsaad/Emona101Emulator/releases)** page.
 
-Once you have the folder open, choose **ONE** of the installation methods below that best fits your situation.
 
-### Method 1: I do NOT have MATLAB installed (Recommended for most users)
-If you don't use MATLAB or don't have a license, you can run this as a standalone Windows program.
+### Method 1: MATLAB App (For MATLAB users)
+1. Go to the **[Releases](https://github.com/yasinsaad/Emona101Emulator/releases)** page.
+2. Download the **`Emona101Emulator.mlappinstall`** file.
+3. Double-click the file to install it directly into your MATLAB Apps gallery.
+4. Access it anytime via the **Apps** tab in the MATLAB toolstrip.
 
-1. Open the downloaded folder and navigate to this exact path:  
-   `standalone installers` ➔ `for_redistribution`
-2. Double-click the file named **`Emona101Installer_web.exe`**.
-3. Follow the installation wizard. 
-   * *Note: If this is your first time running a MATLAB-built standalone app, the installer will automatically download the "MATLAB Runtime" (a free background program required to run the math engine). This may take a few minutes depending on your internet speed.*
-4. Once installed, you can open the **Emona101Emulator** from your Windows Start Menu.
 
-### Method 2: I already have MATLAB installed
-If you are a student or engineer who already has MATLAB on your computer, installing the app directly into MATLAB is the fastest method.
-
-1. Open the main downloaded folder.
-2. Find the file named **`Emona101Emulator.mlappinstall`**.
-3. Double-click this file. MATLAB will open automatically and prompt you to install the application.
-4. Click **Install**.
-5. To open the emulator, go to the **Apps** tab at the top of your MATLAB window and click the **Emona101Emulator** icon.
+### Method 2: Standalone Windows App (No MATLAB required)
+1. Go to the **[Releases](https://github.com/yasinsaad/Emona101Emulator/releases)** section on the right side of this page.
+2. Download the **`Emona101Installer_standalone.exe`**.
+3. Run the installer. 
+   - *Note: The installer will automatically download the free MATLAB Runtime if you don't have it. This ensures the math engine runs correctly on your PC.*
+4. Launch the **Emona101Emulator** from your Start Menu.
 
 ### Method 3: I want to run it from the Source Code (Advanced)
 If you want to view or edit the underlying code:
