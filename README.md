@@ -67,5 +67,20 @@ This emulator currently supports the following hardware blocks:
 ## 👤 Author
 **Yasin Hasan Saad**
 
+## 📖 Project Background
+
+This emulator was developed as the final project for **EEE 4416: Simulation Lab** at the **Islamic University of Technology (IUT)**. 
+
+### The Problem
+During the **EEE 4404: Communication Engineering I Lab**, it was observed that many students struggled to grasp complex modulation and coding concepts due to limited access to the physical Emona 101/C trainer boards outside of scheduled lab hours. 
+
+### The Solution
+I developed this digital twin to provide:
+* **Pre-lab Practice:** Allowing students to familiarize themselves with the hardware layout and signal routing before entering the lab.
+* **Remote Learning:** Providing instructors with a tool for high-quality online demonstrations.
+* **Open Access:** Ensuring that a lack of physical hardware is no longer a barrier to mastering telecommunications fundamentals.
+
+The project demonstrates the application of MATLAB's **App Designer** and **DSP System Toolbox** to create an interactive, student-focused educational tool.
+
 ## 📄 Disclaimer
 This software was developed strictly for educational purposes. The Emona 101/C hardware specifications, board layout, and trademarks are the intellectual property of Emona Instruments Pty Ltd.
