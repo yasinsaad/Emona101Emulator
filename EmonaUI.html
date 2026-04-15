@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emona 101 Simulator - Highlighting Ports</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+        }
+
+        #aspect-ratio-wrapper {
+            position: relative;
+            flex-grow: 1;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f0f0f0;
+        }
+
+        #board-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            max-width: calc(100vh * (1200 / 800));
+            max-height: calc(100vw * (800 / 1200));
+            background-image: url('board.jpg');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .port,
+        .knob,
+        .button {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .port {
+            width: 2%;
+            padding-bottom: 2%;
+            border-radius: 50%;
+            background: #44444400;
+        }
+
+        .port.input:hover {
+            background-color: greenyellow;
+        }
+
+        .port.output:hover {
+            background-color: orange;
+        }
+
+        .port.highlight {
+            outline: 3px solid gold;
+            outline-offset: 2px;
+        }
+
+        .knob {
+            width: 3%;
+            padding-bottom: 3%;
+            height: 0;
+            background: radial-gradient(circle at center, #fff07e 30%, #f0d679 70%);
+            border-radius: 50%;
+            border: 2px solid #f2e980;
+            box-shadow: inset 0 0 10px #fdfd7f;
+            transition: box-shadow 0.2s;
+            transform-origin: 50% 50%;
+        }
+
+        .knob:active {
+            box-shadow: inset 0 0 20px #666, 0 0 10px #333;
+        }
+
+        .knob::before {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            width: 6px;
+            height: 30%;
+            margin-left: -3px;
+            background: #222;
+            border-radius: 2px;
+            box-shadow: 0 0 5px #000;
+            transform-origin: 50% 90%;
+            transition: transform 0.1s;
+        }
+
+        .button {
+            width: 5%;
+            height: 3%;
+            background-color: rgba(0, 0, 255, 0.5);
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.5;
+            border-radius: 6px;
+        }
+
+        svg {
+            z-index: 2;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: visible;
+        }
+
+        .switch-wrapper {
+            position: absolute;
+            width: 1.5%;
+            height: 5%;
+        }
+
+        .vertical-switch {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border-radius: 20%;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .vertical-switch input[type="radio"] {
+            display: none;
+        }
+
+        .vertical-switch label {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background-color: rgba(0, 0, 0, 0.4);
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: bold;
+            font-size: 1vh;
+            user-select: none;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .vertical-switch label:first-of-type {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .vertical-switch input[type="radio"]:checked+label {
+            background-color: rgba(255, 255, 255, 0.436);
+            color: white;
+        }
+
+        #tools-panel {
+            position: absolute;
+            top: 2%;
+            left: 1%;
+            width: 9%;
+            background: rgba(20, 20, 22, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 1.5vmin;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            color: #eee;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5vmin;
+        }
+
+        #tools-panel h3,
+        #tools-panel label {
+            margin: 0;
+            font-size: 1.4vmin;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
+        .color-preset {
+            width: 3.5vmin;
+            height: 3.5vmin;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .color-preset:hover {
+            transform: scale(1.15);
+            border-color: #fff;
+        }
+
+        #color-picker {
+            width: 100%;
+            height: 3vmin;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: transparent;
+        }
+
+        #delete-cable-btn {
+            width: 100%;
+            padding: 0.8vmin;
+            font-size: 1.2vmin;
+            font-weight: bold;
+            border-radius: 6px;
+            border: none;
+            background: #e74c3c;
+            color: white;
+            cursor: pointer;
+            transition: background 0.2s, opacity 0.2s;
+        }
+
+        #delete-cable-btn:disabled {
+            background: #555;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #delete-cable-btn:not(:disabled):hover {
+            background: #c0392b;
+        }
+
+        #oscilloscope-panel {
+            position: absolute;
+            top: 15%;
+            right: 1%;
+            width: 7.5%;
+            background: rgba(20, 20, 22, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2vmin 0;
+        }
+
+        .oscilloscope-title {
+            font-weight: 700;
+            font-size: 1.2vmin;
+            color: #fff;
+            letter-spacing: 1px;
+            margin-bottom: 2vmin;
+        }
+
+        .oscilloscope-port {
+            position: relative;
+            /* Overrides the absolute positioning from .port */
+            transform: none;
+            /* Removes the centering offset from .port */
+            width: 4vmin;
+            height: 4vmin;
+            padding-bottom: 0;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-sizing: border-box;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6), 0 2px 4px rgba(0, 0, 0, 0.4);
+            margin-bottom: 1.5vmin;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .oscilloscope-port:hover {
+            border-color: #fff;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.8), 0 0 8px rgba(255, 255, 255, 0.4);
+        }
+
+        .oscilloscope-port::after {
+            content: attr(data-channel);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.8vmin;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+            pointer-events: none;
+        }
+
+        path.cable-casing {
+            fill: none;
+            stroke-width: var(--cable-casing-width, 10px);
+            stroke: #f0f0f0;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            pointer-events: none;
+        }
+
+        path.cable {
+            fill: none;
+            stroke-width: var(--cable-width, 6px);
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            cursor: pointer;
+            pointer-events: stroke;
+            transition: stroke-width 0.25s ease;
+        }
+
+        path.cable.selected {
+            stroke-width: var(--cable-selected-width, 12px);
+            filter: drop-shadow(0px 0px 4px rgba(255, 255, 255, 0.8));
+        }
+
+        /* --- Line Code 4-State Switch --- */
+        .line-code-switch {
+            position: absolute;
+            width: 2.5%;
+            height: 8%;
+            display: flex;
+            flex-direction: column;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background-color: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .line-code-switch input[type="radio"] {
+            display: none;
+        }
+
+        .line-code-switch label {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #ddd;
+            font-size: 0.8vmin;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .line-code-switch label:last-child {
+            border-bottom: none;
+        }
+
+        .line-code-switch input[type="radio"]:checked+label {
+            background-color: #e74c3c;
+            /* Red to match physical DIP switch */
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+
+
+
+    <div id="aspect-ratio-wrapper">
+        <div id="board-container">
+            <div class="line-code-switch" style="top: 58.5%; left: 32.0%;">
+                <input type="radio" id="lc_nrzl" name="lineCodeMode" value="nrz-l" checked>
+                <label for="lc_nrzl">NRZ-L</label>
+
+                <input type="radio" id="lc_biphase" name="lineCodeMode" value="bi-phase">
+                <label for="lc_biphase">BI-Φ</label>
+
+                <input type="radio" id="lc_rzami" name="lineCodeMode" value="rz-ami">
+                <label for="lc_rzami">AMI</label>
+
+                <input type="radio" id="lc_nrzm" name="lineCodeMode" value="nrz-m">
+                <label for="lc_nrzm">NRZ-M</label>
+            </div>
+
+            <div class="switch-wrapper" style="top: 78.19%; left: 26.70%;">
+                <div class="vertical-switch">
+                    <!-- State 1: HI -->
+                    <input type="radio" id="vco_hi" name="vcoMode" value="hi">
+                    <label for="vco_hi">HI</label>
+
+                    <!-- State 2: LO (default) -->
+                    <input type="radio" id="vco_lo" name="vcoMode" value="lo" checked>
+                    <label for="vco_lo">LO</label>
+                </div>
+            </div>
+            <div id="tools-panel">
+                <h3>Wire Colors</h3>
+                <div class="color-preset" style="background:#FFFF00;" data-color="#FFFF00"></div>
+                <div class="color-preset" style="background:#00FF00;" data-color="#00FF00"></div>
+                <div class="color-preset" style="background:#000000;" data-color="#000000"></div>
+                <div class="color-preset" style="background:#0000FF;" data-color="#0000FF"></div>
+                <label for="color-picker" style="word-wrap: break-word;  overflow-wrap: break-word;">Advanced
+                    Color</label>
+                <input type="color" id="color-picker" value="#FF0000">
+                <button id="delete-cable-btn" disabled>Delete Wire</button>
+            </div>
+            <!-- Ports -->
+            <div class="port output" style="top: 64.92%; left: 22.38%;" id="port_gnd1" data-type="output"></div>
+            <div class="port output" style="top: 50.84%; left: 31.50%;" id="port_gnd2" data-type="output"></div>
+            <div class="port output" style="top: 51.15%; left: 60.60%;" id="port_gnd3" data-type="output"></div>
+            <div class="port output" style="top: 61.88%; left: 22.45%;" id="port_vdc" data-type="output"></div>
+            <div class="port output" style="top: 58.74%; left: 22.38%;" id="port_5V" data-type="output"></div>
+            <div class="port output" style="top: 45.27%; left: 22.45%;" id="port_adder_out" data-type="output"></div>
+            <div class="port output" style="top: 86.50%; left: 51.35%;" id="port_2khz_sin" data-type="output"></div>
+            <div class="port output" style="top: 83.56%; left: 51.35%;" id="port_2khz_digital" data-type="output"></div>
+            <div class="port output" style="top: 80.52%; left: 51.42%;" id="port_8khz_digital" data-type="output"></div>
+            <div class="port output" style="top: 77.38%; left: 51.42%;" id="port_100khz_digital" data-type="output">
+            </div>
+            <div class="port output" style="top: 74.44%; left: 51.49%;" id="port_100khz_cos" data-type="output"></div>
+            <div class="port output" style="top: 71.40%; left: 51.49%;" id="port_100khz_sin" data-type="output"></div>
+            <div class="port output" style="top: 45.78%; left: 80.65%;" id="port_tunable_lpf_out" data-type="output">
+            </div>
+            <div class="port output" style="top: 45.48%; left: 29.74%;" id="port_multiplier_DC_output"
+                data-type="output"></div>
+            <div class="port output" style="top: 33.52%; left: 73.50%;" id="port_rectifier_output" data-type="output">
+            </div>
+            <div class="port output" style="top: 39.70%; left: 73.36%;" id="port_diode_rc_lpf_output"
+                data-type="output"></div>
+            <div class="port output" style="top: 45.68%; left: 73.36%;" id="port_rc_lpf_output" data-type="output">
+            </div>
+            <div class="port output" style="top: 21.17%; left: 59.05%;" id="port_channel_bpf_out" data-type="output">
+            </div>
+            <div class="port output" style="top: 27.35%; left: 58.98%;" id="port_baseband_lpf_out" data-type="output">
+            </div>
+            <div class="port output" style="top: 83.36%; left: 29.61%;" id="port_vco_sin" data-type="output"></div>
+            <div class="port output" style="top: 27.25%; left: 73.50%;" id="port_comparator_out" data-type="output">
+            </div>
+            <div class="port output" style="top: 45.58%; left: 37.04%;" id="port_twin_pulse_q1" data-type="output">
+            </div>
+            <div class="port output" style="top: 33.22%; left: 37.04%;" id="port_twin_pulse_q2" data-type="output">
+            </div>
+            <div class="port output" style="top: 45.68%; left: 44.33%;" id="port_dual_analog_switch_out"
+                data-type="output"></div>
+
+            <div class="port input" style="top: 45.27%; left: 18.94%;" id="port_adder_B" data-type="input"></div>
+            <div class="port input" style="top: 32.92%; left: 18.80%;" id="port_adder_A" data-type="input"></div>
+            <div class="port input" style="top: 39.10%; left: 26.03%;" id="port_multiplier_DC_input_X"
+                data-type="input"></div>
+            <div class="port input" style="top: 45.48%; left: 26.23%;" id="port_multiplier_DC_input_Y"
+                data-type="input"></div>
+            <div class="port input" style="top: 33.42%; left: 69.78%;" id="port_rectifier_input" data-type="input">
+            </div>
+            <div class="port input" style="top: 39.50%; left: 69.85%;" id="port_diode_rc_lpf_input" data-type="input">
+            </div>
+            <div class="port input" style="top: 45.78%; left: 69.85%;" id="port_rc_lpf_input" data-type="input"></div>
+            <div class="port input" style="top: 83.36%; left: 25.89%;" id="port_vco_input" data-type="input"></div>
+            <div class="port input" style="top: 45.68%; left: 77.01%;" id="port_tunable_lpf_in" data-type="input"></div>
+            <div class="port input" style="top: 21.17%; left: 55.27%;" id="port_channel_bpf_in" data-type="input"></div>
+            <div class="port input" style="top: 27.14%; left: 55.27%;" id="port_baseband_lpf_in" data-type="input">
+            </div>
+            <div class="port input" style="top: 27.25%; left: 69.78%;" id="port_comparator_in" data-type="input"></div>
+            <div class="port input" style="top: 21.07%; left: 69.78%;" id="port_comparator_ref" data-type="input"></div>
+            <div class="port input" style="top: 45.48%; left: 33.32%;" id="port_twin_pulse_clk" data-type="input"></div>
+            <div class="port input" style="top: 27.14%; left: 40.61%;" id="port_dual_analog_switch_in1"
+                data-type="input"></div>
+            <div class="port input" style="top: 33.42%; left: 40.75%;" id="port_dual_analog_switch_control1"
+                data-type="input"></div>
+            <div class="port input" style="top: 45.48%; left: 40.68%;" id="port_dual_analog_switch_in2"
+                data-type="input"></div>
+            <div class="port input" style="top: 39.40%; left: 40.75%;" id="port_dual_analog_switch_control2"
+                data-type="input"></div>
+
+            <div class="port input" style="top: 20.86%; left: 26.14%;" id="port_mult1_x_dc" data-type="input"></div>
+            <div class="port input" style="top: 23.93%; left: 26.14%;;" id="port_mult1_x_ac" data-type="input"></div>
+            <div class="port input" style="top: 26.8%; left: 26.14%;" id="port_mult1_y_dc" data-type="input"></div>
+            <div class="port input" style="top: 30.00%; left: 26.14%;" id="port_mult1_y_ac" data-type="input"></div>
+            <div class="port output" style="top: 30.00%; left: 29.8%;" id="port_mult1_out" data-type="output"></div>
+
+            <div class="port input" style="top: 62.20%; left: 55.20%;" id="port_mult3_x" data-type="input"></div>
+            <div class="port input" style="top: 68.00%; left: 55.20%;" id="port_mult3_y" data-type="input"></div>
+            <div class="port output" style="top: 68.00%; left: 58.73%;" id="port_mult3_out" data-type="output"></div>
+
+            <div class="port input" style="top: 74.36%; left: 33.32%;" id="port_seq_clk" data-type="input"></div>
+            <div class="port output" style="top: 62.00%; left: 37.04%;" id="port_seq_line_code" data-type="output">
+            </div>
+            <div class="port output" style="top: 68.40%; left: 37.04%;" id="port_seq_sync" data-type="output"></div>
+            <div class="port output" style="top: 71.38%; left: 37.04%;" id="port_seq_x" data-type="output"></div>
+            <div class="port output" style="top: 74.36%; left: 37.04%;" id="port_seq_y" data-type="output"></div>
+            <!-- Knobs -->
+            <div class="knob" style="top: 71.91%; left: 27.72%;" id="knob_vco_freq"></div>
+            <div class="knob" style="top: 65.43%; left: 27.58%;" id="knob_vco_gain"></div>
+            <div class="knob" style="top: 71.61%; left: 20.22%;" id="knob_vdc"></div>
+            <div class="knob" style="top: 26.64%; left: 20.16%;" id="knob_adder_G"></div>
+            <div class="knob" style="top: 39.40%; left: 20.49%;" id="knob_adder_g"></div>
+            <div class="knob" style="top: 26.84%; left: 35.01%;" id="knob_twin_pulse_width"></div>
+            <div class="knob" style="top: 39.30%; left: 35.08%;" id="knob_twin_pulse_delay"></div>
+            <div class="knob" style="top: 36.36%; left: 49.73%;" id="knob_buffer_gain"></div>
+            <div class="knob" style="top: 26.94%; left: 64.65%;" id="knob_phase_shifter_phase"></div>
+            <div class="knob" style="top: 39.50%; left: 79.37%;" id="knob_tunable_lpf_gain"></div>
+            <div class="knob" style="top: 30.18%; left: 79.44%;" id="knob_tunable_lpf_fc"></div>
+            <svg id="cable-layer"></svg>
+            <!-- Oscilloscope Panel -->
+            <div id="oscilloscope-panel">
+                <div class="oscilloscope-title">OSCILLOSCOPE</div><br>
+                <div class="port oscilloscope-port" data-type="input" data-channel="A"
+                    style="background-color: #3498db;" title="Channel A" id="osc_ch_a"></div>
+                <div class="port oscilloscope-port" data-type="input" data-channel="B"
+                    style="background-color: #f1c40f;" title="Channel B" id="osc_ch_b"></div>
+                <div class="port oscilloscope-port" data-type="input" data-channel="C"
+                    style="background-color: #e74c3c;" title="Channel C" id="osc_ch_c"></div>
+                <div class="port oscilloscope-port" data-type="input" data-channel="D"
+                    style="background-color: #2ecc71;" title="Channel D" id="osc_ch_d"></div>
+
+            </div>
+        </div>
+    </div>
+    <script>
+        // --- Global State ---
+        let selectedColor = "#FF0000";
+        let selectedCable = null;
+        let cableInProgress = null,
+            cableCasingInProgress = null,
+            cableStartPort = null;
+        const cables = new Map();
+        let htmlComponent;
+
+        // --- MATLAB Bridge ---
+        window.onload = () => {
+            setup({
+                get Data() { return null; },
+                set Data(data) {
+                    window.matlab ? window.matlab.postMessage(data) : console.log("Data for MATLAB:", data);
+                }
+            });
+        };
+
+        function setup(component) {
+            htmlComponent = component;
+            attachEventListeners();
+            updateSimulation();
+        }
+
+        // --- Helpers ---
+        function getCenterCoordinates(element) {
+            const rect = element.getBoundingClientRect();
+            const containerRect = document.getElementById('board-container').getBoundingClientRect();
+            return {
+                x: rect.left + rect.width / 2 - containerRect.left,
+                y: rect.top + rect.height / 2 - containerRect.top
+            };
+        }
+
+        function findPortNearPosition(x, y) {
+            const containerRect = document.getElementById('board-container').getBoundingClientRect();
+            const dynamicSnapRange = containerRect.width * 0.02; // Snap radius is exactly 2% of the board's rendered width
+
+            let closestPort = null;
+            let minDistance = Infinity;
+            document.querySelectorAll('.port').forEach(port => {
+                if (port === cableStartPort) return;
+                const portCoords = getCenterCoordinates(port);
+                const distance = Math.sqrt((x - portCoords.x) ** 2 + (y - portCoords.y) ** 2);
+                if (distance < dynamicSnapRange && distance < minDistance) {
+                    minDistance = distance;
+                    closestPort = port;
+                }
+            });
+            return closestPort;
+        }
+
+        function createRouterPath(start, end) {
+            const STEM_LENGTH = 30;
+            const dx = Math.abs(start.x - end.x);
+            const dy = Math.abs(start.y - end.y);
+
+            if (dx < 20) {
+                const midX = start.x + STEM_LENGTH;
+                return `M ${start.x},${start.y} L ${midX},${start.y} L ${midX},${end.y} L ${end.x},${end.y}`;
+            }
+            if (dy < 20) {
+                const midY = start.y + STEM_LENGTH;
+                return `M ${start.x},${start.y} L ${start.x},${midY} L ${end.x},${midY} L ${end.x},${end.y}`;
+            }
+
+            const p1 = { x: start.x, y: start.y };
+            const p2 = { x: start.x, y: start.y + (end.y > start.y ? STEM_LENGTH : -STEM_LENGTH) };
+            const p3 = { x: end.x, y: p2.y };
+            const p4 = { x: end.x, y: end.y };
+            return `M ${p1.x},${p1.y} L ${p2.x},${p2.y} L ${p3.x},${p3.y} L ${p4.x},${p4.y}`;
+        }
+
+        function updateCablePath(cable) {
+            const startPos = getCenterCoordinates(cable.startPort);
+            const endPos = getCenterCoordinates(cable.endPort);
+            const pathData = createRouterPath(startPos, endPos);
+            cable.element.setAttribute('d', pathData);
+            cable.casingElement.setAttribute('d', pathData);
+        }
+
+        // --- State -> MATLAB ---
+        function updateSimulation() {
+            if (!htmlComponent) return;
+            const boardState = { connections: [], knobs: {}, vco: {}, line_code: {} }; // ✅ patched: ensure vco exists
+            cables.forEach(cable => {
+                const startIsOutput = cable.startPort.dataset.type === 'output';
+                boardState.connections.push([
+                    (startIsOutput ? cable.startPort : cable.endPort).id,
+                    (startIsOutput ? cable.endPort : cable.startPort).id
+                ]);
+            });
+            document.querySelectorAll('.knob').forEach(knob => {
+                const transform = knob.style.transform || "rotate(0deg)";
+                const rotation = transform.match(/rotate\(([^deg]+)deg\)/);
+                let angle = rotation ? parseFloat(rotation[1]) : 0;
+                boardState.knobs[knob.id] = (Math.max(-135, Math.min(135, angle)) + 135) / 270;
+            });
+
+            const selectedVcoMode = document.querySelector('input[name="vcoMode"]:checked');
+            if (selectedVcoMode) {
+                boardState.vco.mode = selectedVcoMode.value; // Will be 'hi' or 'lo'
+            }
+            const selectedLineCodeMode = document.querySelector('input[name="lineCodeMode"]:checked');
+            if (selectedLineCodeMode) {
+                boardState.line_code = selectedLineCodeMode.value; // Will be 'hi' or 'lo'
+            }
+            htmlComponent.Data = boardState;
+        }
+
+        // --- Event Listeners ---
+        function attachEventListeners() {
+            const boardContainer = document.getElementById('board-container');
+            const cableLayer = document.getElementById('cable-layer');
+            const deleteCableBtn = document.getElementById('delete-cable-btn');
+            // Setup Dynamic SVG Line Widths
+            function updateResponsiveScale() {
+                const containerWidth = document.getElementById('board-container').getBoundingClientRect().width;
+                document.documentElement.style.setProperty('--cable-width', `${containerWidth * 0.005}px`);
+                document.documentElement.style.setProperty('--cable-casing-width', `${containerWidth * 0.008}px`);
+                document.documentElement.style.setProperty('--cable-selected-width', `${containerWidth * 0.01}px`);
+            }
+
+            // Call immediately, and hook into your existing window resize listener
+            updateResponsiveScale();
+
+            window.addEventListener('resize', () => {
+                updateResponsiveScale();
+                cables.forEach(updateCablePath);
+            });
+
+            function addPortHighlightListeners() {
+                document.querySelectorAll('.port').forEach(port => {
+                    port.addEventListener('mouseenter', () => {
+                        if (cableInProgress && port !== cableStartPort && port.dataset.type !== cableStartPort.dataset.type) {
+                            port.classList.add('highlight');
+                        }
+                    });
+                    port.addEventListener('mouseleave', () => {
+                        port.classList.remove('highlight');
+                    });
+                });
+            }
+
+            addPortHighlightListeners();
+
+            // Cable selection
+            cableLayer.addEventListener('click', (event) => {
+                if (event.target.classList.contains('cable')) {
+                    const clickedCable = [...cables.values()].find(c => c.element === event.target);
+                    if (clickedCable) {
+                        if (selectedCable) selectedCable.element.classList.remove('selected');
+                        selectedCable = clickedCable;
+                        selectedCable.element.classList.add('selected');
+                        deleteCableBtn.disabled = false;
+                    }
+                } else if (selectedCable) {
+                    selectedCable.element.classList.remove('selected');
+                    selectedCable = null;
+                    deleteCableBtn.disabled = true;
+                }
+            });
+
+            // Start cable
+            boardContainer.addEventListener('mousedown', (event) => {
+                if (event.target.classList.contains('port')) {
+                    cableStartPort = event.target;
+                    const startPos = getCenterCoordinates(cableStartPort);
+                    const createPath = (cls) => {
+                        const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        p.classList.add(cls);
+                        return p;
+                    };
+                    cableCasingInProgress = createPath('cable-casing');
+                    cableInProgress = createPath('cable');
+                    cableInProgress.setAttribute('stroke', selectedColor);
+
+                    // Disable pointer events while dragging
+                    cableInProgress.style.pointerEvents = 'none';
+
+                    const initialPath = `M${startPos.x},${startPos.y} L${startPos.x},${startPos.y}`;
+                    cableCasingInProgress.setAttribute('d', initialPath);
+                    cableInProgress.setAttribute('d', initialPath);
+                    cableLayer.appendChild(cableCasingInProgress);
+                    cableLayer.appendChild(cableInProgress);
+                }
+            });
+
+            // Cable dragging
+            boardContainer.addEventListener('mousemove', (event) => {
+                if (cableInProgress) {
+                    const containerRect = boardContainer.getBoundingClientRect();
+                    const mouseX = event.clientX - containerRect.left;
+                    const mouseY = event.clientY - containerRect.top;
+                    const startPos = getCenterCoordinates(cableStartPort);
+                    const pathData = createRouterPath(startPos, { x: mouseX, y: mouseY });
+                    cableInProgress.setAttribute('d', pathData);
+                    cableCasingInProgress.setAttribute('d', pathData);
+                }
+            });
+
+            // Cable end (with snapping)
+            document.addEventListener('mouseup', (event) => {
+                if (!cableInProgress) return;
+                const containerRect = boardContainer.getBoundingClientRect();
+                const mouseX = event.clientX - containerRect.left;
+                const mouseY = event.clientY - containerRect.top;
+                const endPort = findPortNearPosition(mouseX, mouseY);
+
+                document.querySelectorAll('.port.highlight').forEach(p => p.classList.remove('highlight'));
+
+                const cleanup = () => {
+                    cableLayer.removeChild(cableInProgress);
+                    cableLayer.removeChild(cableCasingInProgress);
+                    cableInProgress = cableCasingInProgress = cableStartPort = null;
+                };
+
+                if (endPort && cableStartPort.dataset.type !== endPort.dataset.type) {
+                    const portIds = [cableStartPort.id, endPort.id].sort();
+                    const cableId = `${portIds[0]}-${portIds[1]}`;
+                    if (!cables.has(cableId)) {
+                        // Re-enable pointer events so cable is selectable
+                        cableInProgress.style.pointerEvents = '';
+
+                        const newCable = {
+                            id: cableId,
+                            element: cableInProgress,
+                            casingElement: cableCasingInProgress,
+                            startPort: cableStartPort,
+                            endPort: endPort
+                        };
+                        cables.set(cableId, newCable);
+                        updateCablePath(newCable); // Final snap
+                        updateSimulation();
+                        cableInProgress = cableCasingInProgress = cableStartPort = null; // Keep cable
+                    } else {
+                        cleanup(); // Cable already exists
+                    }
+                } else {
+                    if (endPort) alert('Cannot connect ports of the same type!');
+                    cleanup(); // Invalid connection
+                }
+            });
+
+            // Cable deletion
+            deleteCableBtn.addEventListener('click', () => {
+                if (selectedCable) {
+                    cableLayer.removeChild(selectedCable.element);
+                    cableLayer.removeChild(selectedCable.casingElement);
+                    cables.delete(selectedCable.id);
+                    selectedCable = null;
+                    deleteCableBtn.disabled = true;
+                    updateSimulation();
+                }
+            });
+
+            // Knobs (Upgraded: Vertical drag to rotate)
+            document.querySelectorAll('.knob').forEach(knob => {
+                let isDragging = false;
+                let startY = 0;
+                let startAngle = 0;
+                let lastUpdateTime = 0;
+
+                knob.addEventListener('mousedown', e => {
+                    isDragging = true;
+                    startY = e.clientY;
+
+                    // Extract the current rotation angle from the CSS transform
+                    const initialRotation = (knob.style.transform.match(/rotate\(([^deg]+)deg\)/) || [0, 0])[1];
+                    startAngle = parseFloat(initialRotation) || 0;
+
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+
+                document.addEventListener('mousemove', e => {
+                    if (!isDragging) return;
+
+                    // Calculate vertical movement (drag up = positive, drag down = negative)
+                    const deltaY = startY - e.clientY;
+
+                    // Sensitivity: How many degrees the knob turns per pixel of mouse movement
+                    const sensitivity = 1.5;
+                    let targetAngle = startAngle + (deltaY * sensitivity);
+
+                    // Clamp the rotation strictly between -135 and 135 degrees
+                    targetAngle = Math.max(-135, Math.min(135, targetAngle));
+
+                    knob.style.transform = `translate(-50%, -50%) rotate(${targetAngle}deg)`;
+
+                    // Throttled update to the MATLAB backend (increased to 100ms for smoothness)
+                    if (Date.now() - lastUpdateTime > 100) {
+                        updateSimulation();
+                        lastUpdateTime = Date.now();
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    if (isDragging) {
+                        isDragging = false;
+                        updateSimulation(); // Ensure final position is always sent on release
+                    }
+                });
+            });
+
+            // VCO switch
+            document.querySelectorAll('input[name="vcoMode"]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    updateSimulation();
+                });
+            });
+
+            document.querySelectorAll('input[name="lineCodeMode"]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    updateSimulation();
+                });
+            });
+
+            // Color picker
+            document.querySelectorAll('.color-preset').forEach(p => p.addEventListener('click', () => {
+                selectedColor = p.dataset.color;
+                document.getElementById('color-picker').value = selectedColor;
+            }));
+            document.getElementById('color-picker').addEventListener('input', e => selectedColor = e.target.value);
+
+            // Resize handler
+            window.addEventListener('resize', () => cables.forEach(updateCablePath));
+        }
+    </script>
+
+</body>
+
+</html>
